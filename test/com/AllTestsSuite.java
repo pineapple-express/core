@@ -30,6 +30,7 @@ import com.dotmarketing.portlets.containers.business.ContainerAPITest;
 import com.dotmarketing.portlets.contentlet.ajax.ContentletAjaxTest;
 import com.dotmarketing.portlets.contentlet.business.ContentletAPITest;
 import com.dotmarketing.portlets.contentlet.business.ContentletFactoryTest;
+import com.dotmarketing.portlets.contentlet.business.HostAPIDeleteTest;
 import com.dotmarketing.portlets.contentlet.business.HostAPITest;
 import com.dotmarketing.portlets.folder.business.FolderAPITest;
 import com.dotmarketing.portlets.htmlpages.business.HTMLPageAPITest;
@@ -53,6 +54,7 @@ import com.dotmarketing.webdav.WebDavTest;
 @RunWith (Suite.class)
 @Suite.SuiteClasses ({
 	HostAPITest.class, //Needs Enterprise License
+	HostAPIDeleteTest.class, //Needs Enterprise License
     LinkCheckerAPITest.class, //Needs Enterprise License
     TemplateAPITest.class,
     HTMLPageAPITest.class,

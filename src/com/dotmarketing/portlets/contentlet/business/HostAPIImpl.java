@@ -645,7 +645,10 @@ public class HostAPIImpl implements HostAPI {
 	                    dc.loadResult();
 	                }
 				}
-
+				// Double-check that all contentlets are deleted before removing identifiers
+				contentlets = contentAPI.findContentletsByHost(host, user, respectFrontendRoles);
+				contentAPI.delete(contentlets, user, respectFrontendRoles);
+				
                 // kill bad identifiers pointing to the host
                 dc.setSQL("delete from identifier where host_inode=?");
                 dc.addParam(host.getIdentifier());
