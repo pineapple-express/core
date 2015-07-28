@@ -130,6 +130,14 @@ public abstract class DotCmsDb {
             @Override
             public List<String> getDummyValues() {
                 List<String> dummies = new ArrayList<String>(getColumns().length);
+                dummies.add("'TEMP_IDENTIFIER'");
+                dummies.add("'/System folder'");
+                dummies.add("'DUMMY_ASSET_NAME'");
+                dummies.add("?");
+                dummies.add("'folder'");
+                dummies.add("NULL");
+                dummies.add("NULL");
+
                 return dummies;
             }
         },

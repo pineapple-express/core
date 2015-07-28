@@ -1,6 +1,7 @@
 package com.dotmarketing.db.query;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
 import com.dotcms.repackage.junit.framework.Assert;
@@ -8,7 +9,7 @@ import com.dotcms.repackage.org.junit.BeforeClass;
 import com.dotcms.repackage.org.junit.Test;
 import com.dotmarketing.beans.Host;
 import com.dotmarketing.business.APILocator;
-import com.dotmarketing.cache.StructureCache;
+import com.dotmarketing.business.CacheLocator;
 import com.dotmarketing.common.db.DotConnect;
 import com.dotmarketing.db.query.DotCmsDb.Folder;
 import com.dotmarketing.db.query.DotCmsDb.Identifier;
@@ -30,7 +31,7 @@ public class DotCmsQueryBuilderTest {
     public static void init() throws Exception {
         user = APILocator.getUserAPI().getSystemUser();
         host = APILocator.getHostAPI().findDefaultHost(user, false);
-        fileAssetSt = StructureCache.getStructureByVelocityVarName("FileAsset");
+        fileAssetSt = CacheLocator.getContentTypeCache().getStructureByVelocityVarName("FileAsset");
     }
 
     @Test
@@ -67,26 +68,6 @@ public class DotCmsQueryBuilderTest {
         Assert.assertEquals(deleteFolderByInode.replaceAll("\\s+", " "),
                 deleteFolderByInodeUsingQueryBuilder.replaceAll("\\s+", " "));
     }
-
-    // @Test
-    // public void identifierTableQueryTest() {
-    // DotCmsQueryBuilder qb = new DotCmsQueryBuilder();
-    //
-    // // Expected queries
-    // final String insertQuery = "INSERT INTO folder ("
-    // +
-    // "inode, name, title, show_on_menu, sort_order, files_masks, identifier, "
-    // + "default_file_type, mod_date)";
-    // final String insertParameterized = insertQuery +
-    // " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    // final String insertValues = insertQuery
-    // +
-    // " VALUES ('0120e585-17b9-4fd7-b47b-fdca08ab3493', 'home', 'home', FALSE, 0, '', "
-    // +
-    // "'02e4730e-2e7d-47d5-8d3b-7c302c21d7b3', '33888b6f-7a8e-4069-b1b6-5c1aa9d0a48d', '2014-08-13 09:35:42.826')";
-    // final String deleteFolderByInode =
-    // "DELETE FROM folder WHERE inode = '0120e585-17b9-4fd7-b47b-fdca08ab3493'";
-    // }
 
     @Test
     public void folderTableQueryTest() {
@@ -128,40 +109,67 @@ public class DotCmsQueryBuilderTest {
     }
 
     @Test
-    public void dummyInserts() {
+    public void dummyInsertTest() {
         DotCmsQueryBuilder qb = new DotCmsQueryBuilder();
 
         // Assert using database
         DotConnect dc = new DotConnect();
         try {
-            dc.
+            dc.executeStatement(qb.insert().from(Table.INODE).values(InsertValueType.DUMMY)
+                    .queryString());
+
+            dc.setSQL(qb.insert().from(Table.IDENTIFIER).values(InsertValueType.DUMMY)
+                    .queryString());
+            dc.addParam(host.getHost());
+            dc.loadResult();
 
             dc.setSQL(qb.insert().from(Table.FOLDER).values(InsertValueType.DUMMY).queryString());
             dc.addParam(fileAssetSt.getInode());
             dc.loadResult();
 
             dc.setSQL("select * from folder where inode = 'TEMP_INODE'");
-            Map<String, Object> dummyFolderRow = dc.loadObjectResults().get(0);
-            Assert.assertTrue(dummyFolderRow.size() > 0);
+            Map<String, Object> dummyMapRow = dc.loadObjectResults().get(0);
+            Assert.assertTrue(dummyMapRow.size() > 0);
 
-            dc.setSQL("select * from folder where inode = 'TEMP_INODE'");
-            dummyFolderRow = dc.loadObjectResults().get(0);
-            Assert.assertTrue(dummyFolderRow.size() < 1);
+            dc.setSQL("select * from inode where inode = 'TEMP_INODE'");
+            dummyMapRow = dc.loadObjectResults().get(0);
+            Assert.assertTrue(dummyMapRow.size() > 0);
+
+            dc.setSQL("select * from identifier where id = 'TEMP_IDENTIFIER'");
+            dummyMapRow = dc.loadObjectResults().get(0);
+            Assert.assertTrue(dummyMapRow.size() > 0);
         } catch (SQLException | DotDataException e) {
             Logger.error(this, "Fail ", e);
             Assert.fail(e.getMessage());
         } finally {
-            dc.executeStatement(qb.delete().from(Table.INODE)
-                    .where(new DotCmsCondition().eq(Inode.Columns.INODE, "'TEMP_INODE'"))
-                    .queryString());
-            
-            dc.executeStatement(qb.delete().from(Table.IDENTIFIER)
-                    .where(new DotCmsCondition().eq(Identifier.Columns.ID, "'TEMP_INODE'"))
-                    .queryString());
+            // Delete dummy data
+            try {
+                dc.executeStatement(qb.delete().from(Table.FOLDER)
+                        .where(new DotCmsCondition().eq(Folder.Columns.INODE, "'TEMP_INODE'"))
+                        .queryString());
+                dc.setSQL("select * from folder where inode = 'TEMP_INODE'");
+                List<Map<String, Object>> dummyMapRow = dc.loadObjectResults();
+                Assert.assertTrue(dummyMapRow.size() == 0);
 
-            dc.executeStatement(qb.delete().from(Table.FOLDER)
-                    .where(new DotCmsCondition().eq(Folder.Columns.INODE, "'TEMP_INODE'"))
-                    .queryString());
+                dc.executeStatement(qb
+                        .delete()
+                        .from(Table.IDENTIFIER)
+                        .where(new DotCmsCondition().eq(Identifier.Columns.ID, "'TEMP_IDENTIFIER'"))
+                        .queryString());
+                dc.setSQL("select * from identifier where id = 'TEMP_IDENTIFIER'");
+                dummyMapRow = dc.loadObjectResults();
+                Assert.assertTrue(dummyMapRow.size() == 0);
+
+                dc.executeStatement(qb.delete().from(Table.INODE)
+                        .where(new DotCmsCondition().eq(Inode.Columns.INODE, "'TEMP_INODE'"))
+                        .queryString());
+                dc.setSQL("select * from inode where inode = 'TEMP_INODE'");
+                dummyMapRow = dc.loadObjectResults();
+                Assert.assertTrue(dummyMapRow.size() == 0);
+            } catch (SQLException | DotDataException e) {
+                Logger.error(this, "Fail ", e);
+                Assert.fail(e.getMessage());
+            }
         }
     }
 }
