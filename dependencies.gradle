@@ -1,3 +1,4 @@
+//noinspection GroovyAssignabilityCheck
 dependencies {
 
     compile group: 'com.dotcms.enterprise', name: 'ee', version: '9fe9bc3-SNAPSHOT'
