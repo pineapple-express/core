@@ -99,7 +99,7 @@ public abstract class BaseRestPortlet extends WebResource implements Portlet, Cl
 		try {
 
 			try {
-				request.getRequestDispatcher( path ).include( request, response );
+				request.getRequestDispatcher( path ).include( request, responseWrapper );
 			} catch ( Exception e ) {//Fallback if the normal flow does not work, posible on app servers like weblogic
 
 				//Read the request proxy sent to jersey and look for its handler to get the object behind that proxy
