@@ -781,6 +781,7 @@ public class HostAPIImpl implements HostAPI {
 			systemHost.setHostname("system");
 			systemHost.setSystemHost(true);
 			systemHost.setHost(null);
+			systemHost.setLanguageId(APILocator.getLanguageAPI().getDefaultLanguage().getId());
 			systemHost = new Host(conFac.save(systemHost));
 			systemHost.setIdentifier(Host.SYSTEM_HOST);
 			systemHost.setModDate(new Date());
